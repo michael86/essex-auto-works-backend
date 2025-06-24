@@ -1,4 +1,5 @@
 import { handleExpressValidation } from "./validator";
-import { registrationValidation } from "../validators/auth/registerValidator";
+import { loginValidation, registrationValidation } from "../validators/auth/authValidation";
 
 export const validateRegistration = [...registrationValidation, handleExpressValidation];
+export const validateLogin = [...loginValidation, handleExpressValidation];

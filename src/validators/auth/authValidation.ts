@@ -23,3 +23,9 @@ export const registrationValidation = [
     .matches(/\d/)
     .withMessage("lastname can not contain a number"),
 ];
+
+export const loginValidation = [
+  body("email").isEmail().normalizeEmail().withMessage("Invalid email address"),
+
+  body("password").notEmpty().withMessage("Password is required"),
+];
