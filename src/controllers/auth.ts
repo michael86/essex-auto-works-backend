@@ -1,6 +1,7 @@
 import { RequestHandler } from "express";
 import { insertUser, selectUserByEmail } from "../services/auth";
 import bcrypt from "bcrypt";
+import { generateAndSetJwtCookie } from "../utils/jwt";
 
 const ROUNDS = 10;
 
@@ -47,6 +48,8 @@ export const loginUser: RequestHandler = async (req, res, next) => {
       });
       return;
     }
+
+    generateAndSetJwtCookie(res, user.id, "access");
 
     res.status(200).json({
       status: "success",

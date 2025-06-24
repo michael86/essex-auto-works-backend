@@ -1,4 +1,5 @@
 import { User } from "./users";
+import { Response } from "express";
 
 export type InsertUser = (
   firstname: string,
@@ -8,3 +9,7 @@ export type InsertUser = (
 ) => Promise<string | null>;
 
 export type SelectUserByEmail = (email: string) => Promise<User>;
+
+export type TokenType = "access" | "refresh" | "email-verification";
+
+export type GenerateAndSetJwtCookie = (res: Response, id: string, type?: TokenType) => string;
