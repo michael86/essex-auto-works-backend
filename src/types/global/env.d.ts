@@ -9,5 +9,8 @@ declare namespace NodeJS {
     JWT_EXPIRES_IN: string;
     PORT: string;
     NODE_ENV?: "production" | "development";
+    BREVO_API_KEY: string;
+    FRONTEND_URL_DEV: string;
+    FRONTEND_URL_PROD: string;
   }
 }

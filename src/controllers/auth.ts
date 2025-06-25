@@ -1,7 +1,13 @@
+import { randomBytes } from "crypto";
 import { RequestHandler } from "express";
-import { insertUser, selectUserByEmail } from "../services/auth";
+import {
+  insertEmailVerifyToken,
+  insertUser,
+  selectUserByEmail,
+} from "../services/auth";
 import bcrypt from "bcrypt";
 import { generateAndSetJwtCookie } from "../utils/jwt";
+import { sendVerificationEmail } from "../emails/sendVerificationEmail";
 
 const ROUNDS = 10;
 
@@ -11,9 +17,15 @@ export const registerUser: RequestHandler = async (req, res, next) => {
 
     const hashedPass = await bcrypt.hash(password, ROUNDS);
 
-    await insertUser(firstname, lastname, email, hashedPass);
+    const token = randomBytes(32).toString("hex");
+    await insertUser(firstname, lastname, email, hashedPass, token);
 
-    //Add send email verication here
+    await sendVerificationEmail(
+      email,
+      `${firstname} ${lastname}`,
+      "Please verify your email",
+      token
+    );
 
     res.status(201).json({
       status: "success",

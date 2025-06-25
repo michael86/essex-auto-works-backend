@@ -2,23 +2,48 @@ import pool from "../config/db";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { InsertUser, SelectUserByEmail } from "../types/auth";
 import { DbError } from "../utils/sqlError";
-import { SelectUser } from "../types/queries";
+import { InsertEmailVerifyToken, SelectUser } from "../types/queries";
 import { User } from "../types/users";
 
-export const insertUser: InsertUser = async (firstname, lastname, email, password) => {
+export const insertUser: InsertUser = async (
+  firstname,
+  lastname,
+  email,
+  password,
+  token
+) => {
+  const connection = await pool.getConnection();
+
   try {
-    const [res] = await pool.query<ResultSetHeader>(
-      "INSERT INTO users (firstname, lastname, email, password_hash, role) VALUES (?, ?, ?, ?, 'admin')",
+    await connection.beginTransaction();
+
+    await connection.query(
+      "INSERT INTO users (id, firstname, lastname, email, password_hash) VALUES (UUID(), ?, ?, ?, ?)",
       [firstname, lastname, email, password]
     );
 
-    return `${res.insertId}`;
-  } catch (error: any) {
-    if (error.code === "ER_DUP_ENTRY") {
-      throw new DbError("Email already exists", "EMAIL_EXISTS", 409);
-    }
+    const [[{ id: userId }]] = await connection.query<SelectUser[]>(
+      "SELECT id FROM users WHERE email = ?",
+      [email]
+    );
 
-    throw new DbError("Database error", error.code);
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+
+    await connection.query(
+      "INSERT INTO email_verification_tokens (user_id, token, expires_at) VALUES (?, ?, ?)",
+      [userId, token, expiresAt]
+    );
+
+    await connection.commit();
+  } catch (error: any) {
+    await connection.rollback();
+    if ("code" in error) {
+      console.error(error);
+      throw new DbError("Error registering user ", error.code);
+    }
+    console.error("error registering user: ", error);
+  } finally {
+    connection.release();
   }
 };
 
@@ -43,5 +68,24 @@ export const selectUserByEmail: SelectUserByEmail = async (email) => {
     return rows[0] as User;
   } catch (error) {
     throw error;
+  }
+};
+
+export const insertEmailVerifyToken: InsertEmailVerifyToken = async (
+  userId: string,
+  token: string,
+  expires: Date
+) => {
+  try {
+    console.log(userId);
+    console.log(token);
+    console.log(expires);
+
+    await pool.query<ResultSetHeader>(
+      "INSERT INTO email_verification_tokens (user_id, token, expires_at) VALUES (?, ?, ?)",
+      [userId, token, expires]
+    );
+  } catch (error: any) {
+    throw new DbError("Database error", error.code);
   }
 };
