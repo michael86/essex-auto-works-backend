@@ -1,9 +1,14 @@
 import { randomBytes } from "crypto";
 import { RequestHandler } from "express";
-import { insertUser, selectUserByEmail } from "../services/auth";
+import {
+  insertUser,
+  selectUserByEmail,
+  selectVerificationToken,
+} from "../services/auth";
 import bcrypt from "bcrypt";
 import { generateAndSetJwtCookie } from "../utils/jwt";
 import { sendVerificationEmail } from "../emails/sendVerificationEmail";
+import { getTokenTimeRemaining } from "../utils";
 
 const ROUNDS = 10;
 
@@ -63,6 +68,31 @@ export const loginUser: RequestHandler = async (req, res, next) => {
       status: "success",
       message: "Login successful",
       code: "LOGIN_SUCCESS",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const verifyEmail: RequestHandler = async (req, res, next) => {
+  try {
+    const { token } = req.params;
+
+    const storedToken = await selectVerificationToken(token);
+
+    if (getTokenTimeRemaining(new Date(storedToken.expiresAt)) <= 0) {
+      res.status(401).json({
+        status: 1,
+        message: "Token has expired, please request a new one",
+        code: "TOKEN_EXPIRED",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      status: 1,
+      message: "Email verified succesfully, you can now log in",
+      code: "EMAIL_VERIFIED",
     });
   } catch (error) {
     next(error);

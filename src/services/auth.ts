@@ -2,7 +2,11 @@ import pool from "../config/db";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { InsertUser, SelectUserByEmail } from "../types/auth";
 import { DbError } from "../utils/sqlError";
-import { InsertEmailVerifyToken, SelectUser } from "../types/queries";
+import {
+  InsertEmailVerifyToken,
+  SelectUser,
+  UserEmailVerification,
+} from "../types/queries";
 import { User } from "../types/users";
 
 export const insertUser: InsertUser = async (
@@ -69,4 +73,28 @@ export const selectUserByEmail: SelectUserByEmail = async (email) => {
   } catch (error) {
     throw error;
   }
+};
+
+export const selectVerificationToken = async (tokenReceived: string) => {
+  const [row] = await pool.query<UserEmailVerification[]>(
+    `SELECT 
+      u.email, 
+      evt.expires_at AS expiresAt
+     FROM 
+      email_verification_tokens evt
+     JOIN 
+      users u ON evt.user_id = u.id
+     WHERE 
+      evt.token = ?`,
+    [tokenReceived]
+  );
+
+  if (!row.length)
+    throw new DbError(
+      "Failed to find verification token",
+      "INVALID_TOKEN",
+      404
+    );
+
+  return row[0];
 };
