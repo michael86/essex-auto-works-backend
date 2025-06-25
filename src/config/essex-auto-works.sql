@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.0
+-- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 25, 2025 at 10:16 PM
--- Server version: 10.4.27-MariaDB
--- PHP Version: 8.2.0
+-- Generation Time: Jun 25, 2025 at 10:25 PM
+-- Server version: 10.4.28-MariaDB
+-- PHP Version: 8.2.4
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -33,16 +33,17 @@ CREATE TABLE `customers` (
   `phone` varchar(20) DEFAULT NULL,
   `email` varchar(100) DEFAULT NULL,
   `address` text DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `vehicle_reg` varchar(20) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `customers`
 --
 
-INSERT INTO `customers` (`id`, `full_name`, `phone`, `email`, `address`, `created_at`) VALUES
-('0bbe08c5-505a-11f0-98a9-00d8612e8c27', 'John Smith', '07700900001', 'john.smith@example.com', '123 Main Street, Essex', '2025-06-23 17:46:52'),
-('0bbe1747-505a-11f0-98a9-00d8612e8c27', 'Sarah Taylor', '07700900002', 'sarah.taylor@example.com', '45 Station Road, Basildon', '2025-06-23 17:46:52');
+INSERT INTO `customers` (`id`, `full_name`, `phone`, `email`, `address`, `created_at`, `vehicle_reg`) VALUES
+('0bbe08c5-505a-11f0-98a9-00d8612e8c27', 'John Smith', '07700900001', 'john.smith@example.com', '123 Main Street, Essex', '2025-06-23 17:46:52', NULL),
+('0bbe1747-505a-11f0-98a9-00d8612e8c27', 'Sarah Taylor', '07700900002', 'sarah.taylor@example.com', '45 Station Road, Basildon', '2025-06-23 17:46:52', NULL);
 
 -- --------------------------------------------------------
 
@@ -69,8 +70,8 @@ CREATE TABLE `invoices` (
 --
 
 INSERT INTO `invoices` (`id`, `customer_id`, `user_id`, `invoice_number`, `issue_date`, `due_date`, `subtotal`, `tax`, `total`, `notes`, `created_at`) VALUES
-('0bbf1498-505a-11f0-98a9-00d8612e8c27', '0bbe08c5-505a-11f0-98a9-00d8612e8c27', NULL, 'INV-0001', '2025-06-01', '2025-06-15', '200.00', '40.00', '240.00', 'Full service and oil change', '2025-06-23 17:46:52'),
-('0bbf247b-505a-11f0-98a9-00d8612e8c27', '0bbe1747-505a-11f0-98a9-00d8612e8c27', NULL, 'INV-0002', '2025-06-02', '2025-06-16', '150.00', '30.00', '180.00', 'Brake pad replacement', '2025-06-23 17:46:52');
+('0bbf1498-505a-11f0-98a9-00d8612e8c27', '0bbe08c5-505a-11f0-98a9-00d8612e8c27', NULL, 'INV-0001', '2025-06-01', '2025-06-15', 200.00, 40.00, 240.00, 'Full service and oil change', '2025-06-23 17:46:52'),
+('0bbf247b-505a-11f0-98a9-00d8612e8c27', '0bbe1747-505a-11f0-98a9-00d8612e8c27', NULL, 'INV-0002', '2025-06-02', '2025-06-16', 150.00, 30.00, 180.00, 'Brake pad replacement', '2025-06-23 17:46:52');
 
 -- --------------------------------------------------------
 
@@ -92,10 +93,23 @@ CREATE TABLE `invoice_items` (
 --
 
 INSERT INTO `invoice_items` (`id`, `invoice_id`, `description`, `quantity`, `unit_price`, `total_price`) VALUES
-('0bbfcce3-505a-11f0-98a9-00d8612e8c27', '0bbf1498-505a-11f0-98a9-00d8612e8c27', 'Engine oil change', 1, '50.00', '50.00'),
-('0bbfdb2d-505a-11f0-98a9-00d8612e8c27', '0bbf1498-505a-11f0-98a9-00d8612e8c27', 'Labour - 2 hours', 2, '75.00', '150.00'),
-('0bbfdb95-505a-11f0-98a9-00d8612e8c27', '0bbf247b-505a-11f0-98a9-00d8612e8c27', 'Brake pads (front)', 1, '80.00', '80.00'),
-('0bbfdbd7-505a-11f0-98a9-00d8612e8c27', '0bbf247b-505a-11f0-98a9-00d8612e8c27', 'Labour - 1 hour', 1, '70.00', '70.00');
+('0bbfcce3-505a-11f0-98a9-00d8612e8c27', '0bbf1498-505a-11f0-98a9-00d8612e8c27', 'Engine oil change', 1, 50.00, 50.00),
+('0bbfdb2d-505a-11f0-98a9-00d8612e8c27', '0bbf1498-505a-11f0-98a9-00d8612e8c27', 'Labour - 2 hours', 2, 75.00, 150.00),
+('0bbfdb95-505a-11f0-98a9-00d8612e8c27', '0bbf247b-505a-11f0-98a9-00d8612e8c27', 'Brake pads (front)', 1, 80.00, 80.00),
+('0bbfdbd7-505a-11f0-98a9-00d8612e8c27', '0bbf247b-505a-11f0-98a9-00d8612e8c27', 'Labour - 1 hour', 1, 70.00, 70.00);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `services`
+--
+
+CREATE TABLE `services` (
+  `id` char(36) NOT NULL DEFAULT uuid(),
+  `name` varchar(255) NOT NULL,
+  `default_price` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `description` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -146,6 +160,12 @@ ALTER TABLE `invoices`
 ALTER TABLE `invoice_items`
   ADD PRIMARY KEY (`id`),
   ADD KEY `invoice_id` (`invoice_id`);
+
+--
+-- Indexes for table `services`
+--
+ALTER TABLE `services`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `users`
