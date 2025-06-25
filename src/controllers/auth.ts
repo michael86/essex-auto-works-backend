@@ -103,3 +103,17 @@ export const verifyEmail: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+
+export const resendEmailValidationToken: RequestHandler = (req, res, next) => {
+  try {
+    res
+      .status(200)
+      .json({
+        status: "SUCCESS",
+        code: "TOKEN_SENT",
+        message: "Email sent, please check your inbox and spam folder.",
+      });
+  } catch (error) {
+    next(error);
+  }
+};

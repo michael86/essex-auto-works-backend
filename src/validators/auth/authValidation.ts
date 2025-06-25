@@ -1,7 +1,10 @@
 import { body } from "express-validator";
 
 export const registrationValidation = [
-  body("email").isEmail().normalizeEmail().withMessage("invalid email provided"),
+  body("email")
+    .isEmail()
+    .normalizeEmail()
+    .withMessage("invalid email provided"),
   body("password")
     .trim()
     .isStrongPassword()
@@ -28,4 +31,8 @@ export const loginValidation = [
   body("email").isEmail().normalizeEmail().withMessage("Invalid email address"),
 
   body("password").notEmpty().withMessage("Password is required"),
+];
+
+export const resendEmailValidation = [
+  body("email").isEmail().normalizeEmail().withMessage("Invalid email address"),
 ];
