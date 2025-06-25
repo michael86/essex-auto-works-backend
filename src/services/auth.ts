@@ -70,22 +70,3 @@ export const selectUserByEmail: SelectUserByEmail = async (email) => {
     throw error;
   }
 };
-
-export const insertEmailVerifyToken: InsertEmailVerifyToken = async (
-  userId: string,
-  token: string,
-  expires: Date
-) => {
-  try {
-    console.log(userId);
-    console.log(token);
-    console.log(expires);
-
-    await pool.query<ResultSetHeader>(
-      "INSERT INTO email_verification_tokens (user_id, token, expires_at) VALUES (?, ?, ?)",
-      [userId, token, expires]
-    );
-  } catch (error: any) {
-    throw new DbError("Database error", error.code);
-  }
-};

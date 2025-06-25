@@ -1,10 +1,6 @@
 import { randomBytes } from "crypto";
 import { RequestHandler } from "express";
-import {
-  insertEmailVerifyToken,
-  insertUser,
-  selectUserByEmail,
-} from "../services/auth";
+import { insertUser, selectUserByEmail } from "../services/auth";
 import bcrypt from "bcrypt";
 import { generateAndSetJwtCookie } from "../utils/jwt";
 import { sendVerificationEmail } from "../emails/sendVerificationEmail";
