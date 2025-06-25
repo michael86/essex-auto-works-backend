@@ -4,6 +4,7 @@ import { User } from "./users";
 export interface SelectUser extends RowDataPacket, User {}
 export interface UserEmailVerification extends RowDataPacket {
   email: string;
+  userId: string;
   expiresAt: string;
 }
 

@@ -1,9 +1,11 @@
 import { randomBytes } from "crypto";
 import { RequestHandler } from "express";
 import {
+  deleteVerificationToken,
   insertUser,
   selectUserByEmail,
   selectVerificationToken,
+  setEmailVerified,
 } from "../services/auth";
 import bcrypt from "bcrypt";
 import { generateAndSetJwtCookie } from "../utils/jwt";
@@ -88,6 +90,9 @@ export const verifyEmail: RequestHandler = async (req, res, next) => {
       });
       return;
     }
+
+    await deleteVerificationToken(token);
+    await setEmailVerified(storedToken.userId, 1);
 
     res.status(200).json({
       status: 1,

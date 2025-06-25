@@ -79,6 +79,7 @@ export const selectVerificationToken = async (tokenReceived: string) => {
   const [row] = await pool.query<UserEmailVerification[]>(
     `SELECT 
       u.email, 
+      u.id as userId,
       evt.expires_at AS expiresAt
      FROM 
       email_verification_tokens evt
@@ -97,4 +98,18 @@ export const selectVerificationToken = async (tokenReceived: string) => {
     );
 
   return row[0];
+};
+
+export const deleteVerificationToken = async (token: string) => {
+  await pool.query<ResultSetHeader>(
+    "DELETE FROM email_verification_tokens WHERE token = ?",
+    [token]
+  );
+};
+
+export const setEmailVerified = async (userId: string, value: number) => {
+  await pool.query<ResultSetHeader>(
+    "UPDATE users SET email_verified = ? WHERE id = ?",
+    [value, userId]
+  );
 };
