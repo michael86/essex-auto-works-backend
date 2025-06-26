@@ -3,7 +3,7 @@ import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { InsertUser, SelectUserByEmail } from "../types/auth";
 import { DbError } from "../utils/sqlError";
 import {
-  InsertEmailVerifyToken,
+  InsertToken,
   SelectUser,
   UserEmailVerification,
 } from "../types/queries";
@@ -34,7 +34,7 @@ export const insertUser: InsertUser = async (
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
 
     await connection.query(
-      "INSERT INTO email_verification_tokens (user_id, token, expires_at) VALUES (?, ?, ?)",
+      "INSERT INTO tokens (user_id, token, type, expires_at) VALUES (?, ?, 'email_verification', ?)",
       [userId, token, expiresAt]
     );
 
@@ -80,13 +80,14 @@ export const selectVerificationToken = async (tokenReceived: string) => {
     `SELECT 
       u.email, 
       u.id as userId,
-      evt.expires_at AS expiresAt
+      t.expires_at AS expiresAt,
+      t.type
      FROM 
-      email_verification_tokens evt
+      tokens t
      JOIN 
-      users u ON evt.user_id = u.id
+      users u ON t.user_id = u.id
      WHERE 
-      evt.token = ?`,
+      t.token = ?`,
     [tokenReceived]
   );
 
@@ -100,29 +101,28 @@ export const selectVerificationToken = async (tokenReceived: string) => {
   return row[0];
 };
 
-export const insertEmailVerifyToken: InsertEmailVerifyToken = async (
+export const insertToken: InsertToken = async (
   userId,
   token,
+  type,
   expires = new Date(Date.now() + 60 * 60 * 1000)
 ) => {
   await pool.query<ResultSetHeader>(
-    "INSERT INTO email_verification_tokens (user_id, token, expires_at) VALUES (?, ?, ?)",
-    [userId, token, expires]
+    "INSERT INTO tokens (user_id, token, type, expires_at) VALUES (?, ?, ?, ?)",
+    [userId, token, type, expires]
   );
 };
 
-export const deleteVerificationToken = async (token: string) => {
-  await pool.query<ResultSetHeader>(
-    "DELETE FROM email_verification_tokens WHERE token = ?",
-    [token]
-  );
+export const deleteToken = async (token: string) => {
+  await pool.query<ResultSetHeader>("DELETE FROM tokens WHERE token = ?", [
+    token,
+  ]);
 };
 
 export const deleteVerificationTokenByUserId = async (userId: string) => {
-  await pool.query<ResultSetHeader>(
-    "DELETE FROM email_verification_tokens WHERE user_id = ?",
-    [userId]
-  );
+  await pool.query<ResultSetHeader>("DELETE FROM tokens WHERE user_id = ?", [
+    userId,
+  ]);
 };
 
 export const setEmailVerified = async (userId: string, value: number) => {

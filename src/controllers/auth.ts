@@ -1,9 +1,9 @@
 import { randomBytes } from "crypto";
 import { RequestHandler } from "express";
 import {
-  deleteVerificationToken,
+  deleteToken,
   deleteVerificationTokenByUserId,
-  insertEmailVerifyToken,
+  insertToken,
   insertUser,
   selectUserByEmail,
   selectVerificationToken,
@@ -93,12 +93,20 @@ export const verifyEmail: RequestHandler = async (req, res, next) => {
       sendResponse(res, 400, {
         status: "ERROR",
         message: "Token has expired, please request a new one",
-        code: "TOKEN_EXPIRED",
+        code: "INVALID_TOKEN",
       });
       return;
     }
 
-    await deleteVerificationToken(token);
+    if (storedToken.type !== "email_verification") {
+      sendResponse(res, 400, {
+        status: "ERROR",
+        message: "Invalid token or token not found",
+        code: "INVALID_TOKEN",
+      });
+    }
+
+    await deleteToken(token);
     await setEmailVerified(storedToken.userId, 1);
 
     sendResponse(res, 200, {
@@ -137,7 +145,7 @@ export const resendEmailValidationToken: RequestHandler = async (
     await deleteVerificationTokenByUserId(user.id);
 
     const token = randomBytes(32).toString("hex");
-    await insertEmailVerifyToken(user.id, token);
+    await insertToken(user.id, token, "email_verification");
 
     await sendVerificationEmail(
       email,

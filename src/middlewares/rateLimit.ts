@@ -1,9 +1,27 @@
 import rateLimit from "express-rate-limit";
 
+//auth limiter - to be used for all vital account routes
 export const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // 10 requests per window
-  message: "Too many requests from this IP, please try again later.",
+  windowMs: 60 * 60 * 1000, // 60 minutes
+  max: 5, // 5 requests per window
   standardHeaders: true,
   legacyHeaders: false,
+  message: {
+    status: "ERROR",
+    code: "TOO_MANY_REQUESTS",
+    message: "Too many requests from this IP, please try again later.",
+  },
+});
+
+//generic route - generic routes
+export const genericLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 1 hour
+  max: 20, // 20 attempts per IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    status: "ERROR",
+    code: "TOO_MANY_LOGIN_ATTEMPTS",
+    message: "Too many login attempts. Please wait 15 minutes.",
+  },
 });
