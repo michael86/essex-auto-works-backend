@@ -1,3 +1,4 @@
+import { JwtPayload } from "jsonwebtoken";
 import { User } from "./users";
 import { Response } from "express";
 
@@ -13,8 +14,11 @@ export type SelectUserByEmail = (email: string) => Promise<User>;
 
 export type TokenType = "access" | "refresh";
 
-export type GenerateAndSetJwtCookie = (
-  res: Response,
-  id: string,
-  type?: TokenType
-) => string;
+export interface ExtendedJwtPayload extends JwtPayload {
+  id: string;
+  type: "access" | "refresh";
+}
+
+export type GenerateAndSetJwtCookie = (res: Response, id: string, type?: TokenType) => string;
+
+export type ExtractCookieData = (cookie: string) => Promise<string>;

@@ -1,5 +1,5 @@
 import jwt, { SignOptions, JwtPayload } from "jsonwebtoken";
-import { GenerateAndSetJwtCookie } from "../types/auth";
+import { ExtractCookieData, GenerateAndSetJwtCookie } from "../types/auth";
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "9h";
@@ -30,4 +30,16 @@ export const generateAndSetJwtCookie: GenerateAndSetJwtCookie = (
   });
 
   return token;
+};
+
+export const extractCookieData: ExtractCookieData = async (cookie) => {
+  const decoded = jwt.verify(cookie, JWT_SECRET);
+
+  if (typeof decoded === "string") {
+    throw new Error("Expected an object JWT payload, got string");
+  }
+
+  if (!decoded.id) throw new Error("Expected user id, but couldn't find it");
+
+  return decoded.id as string;
 };
