@@ -3,12 +3,13 @@ import { RequestHandler } from "express";
 import {
   deleteToken,
   deleteTokensByUserAndType,
-  deleteVerificationTokenByUserId,
   insertToken,
   insertUser,
   selectUserByEmail,
+  selectUserById,
   selectVerificationToken,
   setEmailVerified,
+  updateUserPassword,
 } from "../services/auth";
 import bcrypt from "bcrypt";
 import { generateAndSetJwtCookie } from "../utils/jwt";
@@ -16,6 +17,7 @@ import { sendVerificationEmail } from "../emails/sendVerificationEmail";
 import { getTokenTimeRemaining, sleep } from "../utils";
 import { sendResponse } from "../utils/sendResponse";
 import { sendPasswordResetEmail } from "../emails/sendPasswordResetLink";
+import { sendPasswordChangedEmail } from "../emails/sendPasswordChangedEmail";
 
 const ROUNDS = 10;
 
@@ -144,7 +146,7 @@ export const resendEmailValidationToken: RequestHandler = async (
       return;
     }
 
-    await deleteVerificationTokenByUserId(user.id);
+    await deleteTokensByUserAndType(user.id, "email_verification");
 
     const token = randomBytes(32).toString("hex");
     await insertToken(user.id, token, "email_verification");
@@ -202,6 +204,47 @@ export const forgotPassword: RequestHandler = async (req, res, next) => {
       code: "PASSWORD_EMAIL_SENT",
       message:
         "A reset link has been sent to the email provided, please check you spam",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resetPassword: RequestHandler = async (req, res, next) => {
+  try {
+    const { token: recievedToken } = req.params;
+    const { password } = req.body;
+
+    const token = await selectVerificationToken(recievedToken);
+
+    if (
+      getTokenTimeRemaining(new Date(token.expiresAt)) <= 0 ||
+      token.type !== "password_reset"
+    ) {
+      sendResponse(res, 403, {
+        status: "ERROR",
+        code: "INVALID_TOKEN",
+        message: "Link expired or invalid, please request a new one",
+      });
+      return;
+    }
+
+    const user = await selectUserById(token.userId);
+    const newPassHash = await bcrypt.hash(password, ROUNDS);
+
+    await updateUserPassword(user.id, newPassHash);
+    await deleteTokensByUserAndType(user.id, "password_reset");
+
+    await sendPasswordChangedEmail(
+      user.email,
+      `${user.firstname} ${user.lastname}`
+    );
+
+    sendResponse(res, 200, {
+      status: "SUCCESS",
+      code: "PASSWORD_CHANGED",
+      message:
+        "Your password has been updated, please login using your new credentials",
     });
   } catch (error) {
     next(error);

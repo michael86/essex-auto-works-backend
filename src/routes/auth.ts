@@ -11,6 +11,7 @@ import {
   loginUser,
   registerUser,
   resendEmailValidationToken,
+  resetPassword,
   verifyEmail,
 } from "../controllers/auth";
 
@@ -25,6 +26,6 @@ router.post(
   resendEmailValidationToken
 );
 router.post("/forgot-password", validateForgotPassword, forgotPassword);
-router.post("/reset-password", validateResetPassword);
+router.post("/reset-password/:token", validateResetPassword, resetPassword);
 
 export default router;

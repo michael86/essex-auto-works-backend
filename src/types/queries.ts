@@ -4,7 +4,7 @@ import { User } from "./users";
 export type TokenType = "email_verification" | "password_reset";
 
 export interface SelectUser extends RowDataPacket, User {}
-export interface UserEmailVerification extends RowDataPacket {
+export interface UserVerificationToken extends RowDataPacket {
   email: string;
   userId: string;
   expiresAt: string;

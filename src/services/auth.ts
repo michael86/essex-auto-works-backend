@@ -1,13 +1,14 @@
 import pool from "../config/db";
 import { ResultSetHeader } from "mysql2";
 import { InsertUser, SelectUserByEmail } from "../types/auth";
-import { TokenType } from "../types/queries";
-import { DbError } from "../utils/sqlError";
 import {
+  TokenType,
+  UserVerificationToken,
   InsertToken,
   SelectUser,
-  UserEmailVerification,
 } from "../types/queries";
+import { DbError } from "../utils/sqlError";
+
 import { User } from "../types/users";
 
 export const insertUser: InsertUser = async (
@@ -52,6 +53,30 @@ export const insertUser: InsertUser = async (
   }
 };
 
+export const selectUserById: SelectUserByEmail = async (id) => {
+  try {
+    const [rows] = await pool.query<SelectUser[]>(
+      `SELECT 
+         id, 
+         email, 
+         password_hash AS passwordHash, 
+         firstname, 
+         lastname, 
+         role, 
+         email_verified AS emailVerified 
+       FROM users 
+       WHERE id = ?`,
+      [id]
+    );
+
+    if (!rows[0]) throw new DbError("User not found", "INVALID_USER", 400);
+
+    return rows[0] as User;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const selectUserByEmail: SelectUserByEmail = async (email) => {
   try {
     const [rows] = await pool.query<SelectUser[]>(
@@ -77,7 +102,7 @@ export const selectUserByEmail: SelectUserByEmail = async (email) => {
 };
 
 export const selectVerificationToken = async (tokenReceived: string) => {
-  const [row] = await pool.query<UserEmailVerification[]>(
+  const [row] = await pool.query<UserVerificationToken[]>(
     `SELECT 
       u.email, 
       u.id as userId,
@@ -130,15 +155,16 @@ export const deleteTokensByUserAndType = async (
   ]);
 };
 
-export const deleteVerificationTokenByUserId = async (userId: string) => {
-  await pool.query<ResultSetHeader>("DELETE FROM tokens WHERE user_id = ?", [
-    userId,
-  ]);
-};
-
 export const setEmailVerified = async (userId: string, value: number) => {
   await pool.query<ResultSetHeader>(
     "UPDATE users SET email_verified = ? WHERE id = ?",
     [value, userId]
   );
+};
+
+export const updateUserPassword = async (id: string, password: string) => {
+  await pool.query("UPDATE users SET password_hash = ? WHERE id = ?", [
+    password,
+    id,
+  ]);
 };

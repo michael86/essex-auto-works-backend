@@ -19,4 +19,4 @@ export const resendEmailValidation = [emailField];
 
 export const forgotPasswordValidation = [emailField];
 
-export const resetPasswordValidation = [passwordField];
+export const resetPasswordValidation = [strongPasswordField];
