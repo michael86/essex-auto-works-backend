@@ -100,10 +100,28 @@ export const selectVerificationToken = async (tokenReceived: string) => {
   return row[0];
 };
 
+export const insertEmailVerifyToken: InsertEmailVerifyToken = async (
+  userId,
+  token,
+  expires = new Date(Date.now() + 60 * 60 * 1000)
+) => {
+  await pool.query<ResultSetHeader>(
+    "INSERT INTO email_verification_tokens (user_id, token, expires_at) VALUES (?, ?, ?)",
+    [userId, token, expires]
+  );
+};
+
 export const deleteVerificationToken = async (token: string) => {
   await pool.query<ResultSetHeader>(
     "DELETE FROM email_verification_tokens WHERE token = ?",
     [token]
+  );
+};
+
+export const deleteVerificationTokenByUserId = async (userId: string) => {
+  await pool.query<ResultSetHeader>(
+    "DELETE FROM email_verification_tokens WHERE user_id = ?",
+    [userId]
   );
 };
 

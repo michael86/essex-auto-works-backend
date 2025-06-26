@@ -11,5 +11,5 @@ export interface UserEmailVerification extends RowDataPacket {
 export type InsertEmailVerifyToken = (
   userId: string,
   token: string,
-  expires: Date
+  expires?: Date
 ) => Promise<void>;
