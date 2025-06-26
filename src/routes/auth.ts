@@ -1,10 +1,13 @@
 import { Router } from "express";
 import {
+  validateForgotPassword,
   validateLogin,
   validateRegistration,
   validateResendEmailVerification,
+  validateResetPassword,
 } from "../middlewares/auth";
 import {
+  forgotPassword,
   loginUser,
   registerUser,
   resendEmailValidationToken,
@@ -21,7 +24,7 @@ router.post(
   validateResendEmailVerification,
   resendEmailValidationToken
 );
-router.post("/forgot-password");
-router.post("/reset-password");
+router.post("/forgot-password", validateForgotPassword, forgotPassword);
+router.post("/reset-password", validateResetPassword);
 
 export default router;

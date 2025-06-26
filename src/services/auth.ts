@@ -1,6 +1,7 @@
 import pool from "../config/db";
-import { ResultSetHeader, RowDataPacket } from "mysql2";
+import { ResultSetHeader } from "mysql2";
 import { InsertUser, SelectUserByEmail } from "../types/auth";
+import { TokenType } from "../types/queries";
 import { DbError } from "../utils/sqlError";
 import {
   InsertToken,
@@ -116,6 +117,16 @@ export const insertToken: InsertToken = async (
 export const deleteToken = async (token: string) => {
   await pool.query<ResultSetHeader>("DELETE FROM tokens WHERE token = ?", [
     token,
+  ]);
+};
+
+export const deleteTokensByUserAndType = async (
+  user: string,
+  type: TokenType
+) => {
+  await pool.query("DELETE FROM tokens WHERE user_id = ? AND type = ?", [
+    user,
+    type,
   ]);
 };
 

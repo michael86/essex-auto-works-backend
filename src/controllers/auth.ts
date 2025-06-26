@@ -2,6 +2,7 @@ import { randomBytes } from "crypto";
 import { RequestHandler } from "express";
 import {
   deleteToken,
+  deleteTokensByUserAndType,
   deleteVerificationTokenByUserId,
   insertToken,
   insertUser,
@@ -14,6 +15,7 @@ import { generateAndSetJwtCookie } from "../utils/jwt";
 import { sendVerificationEmail } from "../emails/sendVerificationEmail";
 import { getTokenTimeRemaining, sleep } from "../utils";
 import { sendResponse } from "../utils/sendResponse";
+import { sendPasswordResetEmail } from "../emails/sendPasswordResetLink";
 
 const ROUNDS = 10;
 
@@ -158,6 +160,48 @@ export const resendEmailValidationToken: RequestHandler = async (
       status: "SUCCESS",
       code: "TOKEN_SENT",
       message: "Email sent, please check your inbox and spam folder",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const forgotPassword: RequestHandler = async (req, res, next) => {
+  try {
+    await sleep(300);
+    const { email } = req.body;
+
+    let user;
+    try {
+      user = await selectUserByEmail(email);
+    } catch {
+      //selectUser throws customDB error if no user found, so respond as if all okay, but hang for a bit!
+      await sleep(800);
+      sendResponse(res, 200, {
+        status: "SUCCESS",
+        code: "PASSWORD_EMAIL_SENT",
+        message:
+          "A reset link has been sent to the email provided, please check you spam",
+      });
+      return;
+    }
+
+    const token = randomBytes(32).toString("hex");
+    await deleteTokensByUserAndType(user.id, "password_reset");
+    await insertToken(user.id, token, "password_reset");
+
+    await sendPasswordResetEmail(
+      email,
+      `${user.firstname} ${user.lastname}`,
+      "Reset Password",
+      token
+    );
+
+    sendResponse(res, 200, {
+      status: "SUCCESS",
+      code: "PASSWORD_EMAIL_SENT",
+      message:
+        "A reset link has been sent to the email provided, please check you spam",
     });
   } catch (error) {
     next(error);

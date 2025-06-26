@@ -11,7 +11,7 @@ export type InsertUser = (
 
 export type SelectUserByEmail = (email: string) => Promise<User>;
 
-export type TokenType = "access" | "refresh" | "email-verification";
+export type TokenType = "access" | "refresh";
 
 export type GenerateAndSetJwtCookie = (
   res: Response,
