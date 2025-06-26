@@ -240,10 +240,11 @@ export const resetPassword: RequestHandler = async (req, res, next) => {
 
 export const validateUserJwt: RequestHandler = async (req, res, next) => {
   try {
+    await sleep(8000);
     const { token } = req.cookies;
 
     if (!token) {
-      sendResponse(res, 404, {
+      sendResponse(res, 403, {
         status: "ERROR",
         code: "INVALID_SESSION",
         message: "User is not verified",
@@ -257,7 +258,7 @@ export const validateUserJwt: RequestHandler = async (req, res, next) => {
     } catch (error) {
       console.error(error);
       await sleep(800);
-      sendResponse(res, 404, {
+      sendResponse(res, 403, {
         status: "ERROR",
         code: "INVALID_SESSION",
         message: "User is not verified",
