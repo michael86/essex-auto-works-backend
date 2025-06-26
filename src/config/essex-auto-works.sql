@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 25, 2025 at 11:16 PM
--- Server version: 10.4.28-MariaDB
--- PHP Version: 8.2.4
+-- Generation Time: Jun 26, 2025 at 10:30 AM
+-- Server version: 10.4.32-MariaDB
+-- PHP Version: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -44,20 +44,6 @@ CREATE TABLE `customers` (
 INSERT INTO `customers` (`id`, `full_name`, `phone`, `email`, `address`, `created_at`, `vehicle_reg`) VALUES
 ('0bbe08c5-505a-11f0-98a9-00d8612e8c27', 'John Smith', '07700900001', 'john.smith@example.com', '123 Main Street, Essex', '2025-06-23 17:46:52', NULL),
 ('0bbe1747-505a-11f0-98a9-00d8612e8c27', 'Sarah Taylor', '07700900002', 'sarah.taylor@example.com', '45 Station Road, Basildon', '2025-06-23 17:46:52', NULL);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `email_verification_tokens`
---
-
-CREATE TABLE `email_verification_tokens` (
-  `id` char(36) NOT NULL DEFAULT uuid(),
-  `user_id` char(36) NOT NULL,
-  `token` varchar(255) NOT NULL,
-  `expires_at` datetime NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -128,6 +114,21 @@ CREATE TABLE `services` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `tokens`
+--
+
+CREATE TABLE `tokens` (
+  `id` char(36) NOT NULL DEFAULT uuid(),
+  `user_id` char(36) NOT NULL,
+  `token` varchar(255) NOT NULL,
+  `type` enum('email_verification','password_reset') NOT NULL,
+  `expires_at` datetime NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `users`
 --
 
@@ -147,7 +148,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `firstname`, `lastname`, `email`, `password_hash`, `role`, `email_verified`, `created_at`) VALUES
-('a76492b1-5206-11f0-9e4f-f8cab8066541', 'michael', 'hodgson', 'michael8t6@gmail.com', '$2b$10$DaEEYIDnRphLoPoZBfLxDuzaT0o3jmYR26lpqDC32JBef2m9U0IBm', 'staff', 1, '2025-06-25 20:54:58');
+('aea3f946-5266-11f0-9f27-509a4c3e7162', 'michael', 'hodgson', 'michael8t6@gmail.com', '$2b$10$LeOh8fuGS0fOXdxootSxm.OVOM9VosZQMW1f/ggqDkajIyQREoEQW', 'staff', 1, '2025-06-26 08:22:20');
 
 --
 -- Indexes for dumped tables
@@ -158,14 +159,6 @@ INSERT INTO `users` (`id`, `firstname`, `lastname`, `email`, `password_hash`, `r
 --
 ALTER TABLE `customers`
   ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `email_verification_tokens`
---
-ALTER TABLE `email_verification_tokens`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `token` (`token`),
-  ADD KEY `fk_user_email_token` (`user_id`);
 
 --
 -- Indexes for table `invoices`
@@ -190,6 +183,14 @@ ALTER TABLE `services`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `tokens`
+--
+ALTER TABLE `tokens`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `token` (`token`),
+  ADD KEY `user_id` (`user_id`);
+
+--
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
@@ -199,12 +200,6 @@ ALTER TABLE `users`
 --
 -- Constraints for dumped tables
 --
-
---
--- Constraints for table `email_verification_tokens`
---
-ALTER TABLE `email_verification_tokens`
-  ADD CONSTRAINT `fk_user_email_token` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `invoices`
@@ -218,6 +213,12 @@ ALTER TABLE `invoices`
 --
 ALTER TABLE `invoice_items`
   ADD CONSTRAINT `invoice_items_ibfk_1` FOREIGN KEY (`invoice_id`) REFERENCES `invoices` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `tokens`
+--
+ALTER TABLE `tokens`
+  ADD CONSTRAINT `tokens_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
