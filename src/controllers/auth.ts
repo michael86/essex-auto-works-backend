@@ -18,6 +18,7 @@ import { getTokenTimeRemaining, sleep } from "../utils";
 import { sendResponse } from "../utils/sendResponse";
 import { sendPasswordResetEmail } from "../emails/sendPasswordResetLink";
 import { sendPasswordChangedEmail } from "../emails/sendPasswordChangedEmail";
+import { DbError } from "../utils/sqlError";
 
 const ROUNDS = 10;
 
@@ -44,6 +45,14 @@ export const registerUser: RequestHandler = async (req, res, next) => {
       message: "Account created, please verify your email",
     });
   } catch (error: any) {
+    if (error instanceof DbError) {
+      sendResponse(res, 409, {
+        status: "ERROR",
+        code: error.code,
+        message: error.message,
+      });
+      return;
+    }
     next(error);
   }
 };
@@ -123,7 +132,11 @@ export const verifyEmail: RequestHandler = async (req, res, next) => {
   }
 };
 
-export const resendEmailValidationToken: RequestHandler = async (req, res, next) => {
+export const resendEmailValidationToken: RequestHandler = async (
+  req,
+  res,
+  next
+) => {
   try {
     await sleep(500);
 
@@ -178,7 +191,8 @@ export const forgotPassword: RequestHandler = async (req, res, next) => {
       sendResponse(res, 200, {
         status: "SUCCESS",
         code: "PASSWORD_EMAIL_SENT",
-        message: "A reset link has been sent to the email provided, please check you spam",
+        message:
+          "A reset link has been sent to the email provided, please check you spam",
       });
       return;
     }
@@ -197,7 +211,8 @@ export const forgotPassword: RequestHandler = async (req, res, next) => {
     sendResponse(res, 200, {
       status: "SUCCESS",
       code: "PASSWORD_EMAIL_SENT",
-      message: "A reset link has been sent to the email provided, please check you spam",
+      message:
+        "A reset link has been sent to the email provided, please check you spam",
     });
   } catch (error) {
     next(error);
@@ -211,7 +226,10 @@ export const resetPassword: RequestHandler = async (req, res, next) => {
 
     const token = await selectVerificationToken(recievedToken);
 
-    if (getTokenTimeRemaining(new Date(token.expiresAt)) <= 0 || token.type !== "password_reset") {
+    if (
+      getTokenTimeRemaining(new Date(token.expiresAt)) <= 0 ||
+      token.type !== "password_reset"
+    ) {
       sendResponse(res, 403, {
         status: "ERROR",
         code: "INVALID_TOKEN",
@@ -226,12 +244,16 @@ export const resetPassword: RequestHandler = async (req, res, next) => {
     await updateUserPassword(user.id, newPassHash);
     await deleteTokensByUserAndType(user.id, "password_reset");
 
-    await sendPasswordChangedEmail(user.email, `${user.firstname} ${user.lastname}`);
+    await sendPasswordChangedEmail(
+      user.email,
+      `${user.firstname} ${user.lastname}`
+    );
 
     sendResponse(res, 200, {
       status: "SUCCESS",
       code: "PASSWORD_CHANGED",
-      message: "Your password has been updated, please login using your new credentials",
+      message:
+        "Your password has been updated, please login using your new credentials",
     });
   } catch (error) {
     next(error);

@@ -3,7 +3,7 @@ import rateLimit from "express-rate-limit";
 //auth limiter - to be used for all vital account routes
 export const authLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 60 minutes
-  max: 5, // 5 requests per window
+  max: process.env.NODE_ENV === "development" ? 10000000 : 5, // 5 requests per window unless dev mode
   standardHeaders: true,
   legacyHeaders: false,
   message: {
