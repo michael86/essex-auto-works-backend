@@ -92,8 +92,8 @@ export const loginUser: RequestHandler = async (req, res, next) => {
       code: "LOGIN_SUCCESS",
       data: {
         email: user.email,
-        firstname: user.firstName,
-        lastname: user.lastName,
+        firstName: user.firstName,
+        lastName: user.lastName,
         role: user.role,
         emailVerified: user.emailVerified,
       },
@@ -291,8 +291,8 @@ export const validateUserJwt: RequestHandler = async (req, res, next) => {
       message: "User is verified",
       data: {
         email: user.email,
-        firstname: user.firstName,
-        lastname: user.lastName,
+        firstName: user.firstName,
+        lastName: user.lastName,
         role: user.role,
       },
     });
