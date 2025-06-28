@@ -262,7 +262,7 @@ export const resetPassword: RequestHandler = async (req, res, next) => {
 
 export const validateUserJwt: RequestHandler = async (req, res, next) => {
   try {
-    await sleep(8000);
+    await sleep(500);
     const { token } = req.cookies;
 
     if (!token) {

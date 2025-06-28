@@ -4,6 +4,9 @@ export const getVerificationEmailHtml = (token: string): string => {
       ? process.env.FRONTEND_URL_DEV
       : process.env.FRONTEND_URL_PROD;
 
+  console.log(process.env.NODE_ENV);
+  console.log(baseUrl);
+
   return `
       <html>
         <body>
