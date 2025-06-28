@@ -294,6 +294,7 @@ export const validateUserJwt: RequestHandler = async (req, res, next) => {
         firstName: user.firstName,
         lastName: user.lastName,
         role: user.role,
+        emailVerified: user.emailVerified,
       },
     });
   } catch (error) {
