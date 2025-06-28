@@ -63,21 +63,22 @@ export const loginUser: RequestHandler = async (req, res, next) => {
     const { email, password } = req.body;
     const user = await selectUserByEmail(email);
 
-    if (!user.emailVerified) {
-      sendResponse(res, 403, {
-        status: "ERROR",
-        message: "Please verify your email to continue.",
-        code: "EMAIL_NOT_VERIFIED",
-      });
-      return;
-    }
+    //allow user to login but inform email not verified and restrict
+    // if (!user.emailVerified) {
+    //   sendResponse(res, 403, {
+    //     status: "ERROR",
+    //     message: "Please verify your email to continue.",
+    //     code: "EMAIL_NOT_VERIFIED",
+    //   });
+    //   return;
+    // }
 
     const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) {
       await sleep(800);
       sendResponse(res, 401, {
         status: "ERROR",
-        message: "Invalid credentials.",
+        message: "Email or Password not valid.",
         code: "INVALID_CREDENTIALS",
       });
       return;
@@ -89,6 +90,13 @@ export const loginUser: RequestHandler = async (req, res, next) => {
       status: "SUCCESS",
       message: "Login successful",
       code: "LOGIN_SUCCESS",
+      data: {
+        email: user.email,
+        firstname: user.firstName,
+        lastname: user.lastName,
+        role: user.role,
+        emailVerified: user.emailVerified,
+      },
     });
   } catch (error) {
     next(error);
@@ -132,11 +140,7 @@ export const verifyEmail: RequestHandler = async (req, res, next) => {
   }
 };
 
-export const resendEmailValidationToken: RequestHandler = async (
-  req,
-  res,
-  next
-) => {
+export const resendEmailValidationToken: RequestHandler = async (req, res, next) => {
   try {
     await sleep(500);
 
@@ -162,7 +166,7 @@ export const resendEmailValidationToken: RequestHandler = async (
 
     await sendVerificationEmail(
       email,
-      `${user.firstname} ${user.lastname}`,
+      `${user.firstName} ${user.lastName}`,
       "Please verify your email",
       token
     );
@@ -191,8 +195,7 @@ export const forgotPassword: RequestHandler = async (req, res, next) => {
       sendResponse(res, 200, {
         status: "SUCCESS",
         code: "PASSWORD_EMAIL_SENT",
-        message:
-          "A reset link has been sent to the email provided, please check you spam",
+        message: "A reset link has been sent to the email provided, please check you spam",
       });
       return;
     }
@@ -203,7 +206,7 @@ export const forgotPassword: RequestHandler = async (req, res, next) => {
 
     await sendPasswordResetEmail(
       email,
-      `${user.firstname} ${user.lastname}`,
+      `${user.firstName} ${user.lastName}`,
       "Reset Password",
       token
     );
@@ -211,8 +214,7 @@ export const forgotPassword: RequestHandler = async (req, res, next) => {
     sendResponse(res, 200, {
       status: "SUCCESS",
       code: "PASSWORD_EMAIL_SENT",
-      message:
-        "A reset link has been sent to the email provided, please check you spam",
+      message: "A reset link has been sent to the email provided, please check you spam",
     });
   } catch (error) {
     next(error);
@@ -226,10 +228,7 @@ export const resetPassword: RequestHandler = async (req, res, next) => {
 
     const token = await selectVerificationToken(recievedToken);
 
-    if (
-      getTokenTimeRemaining(new Date(token.expiresAt)) <= 0 ||
-      token.type !== "password_reset"
-    ) {
+    if (getTokenTimeRemaining(new Date(token.expiresAt)) <= 0 || token.type !== "password_reset") {
       sendResponse(res, 403, {
         status: "ERROR",
         code: "INVALID_TOKEN",
@@ -244,16 +243,12 @@ export const resetPassword: RequestHandler = async (req, res, next) => {
     await updateUserPassword(user.id, newPassHash);
     await deleteTokensByUserAndType(user.id, "password_reset");
 
-    await sendPasswordChangedEmail(
-      user.email,
-      `${user.firstname} ${user.lastname}`
-    );
+    await sendPasswordChangedEmail(user.email, `${user.firstName} ${user.lastName}`);
 
     sendResponse(res, 200, {
       status: "SUCCESS",
       code: "PASSWORD_CHANGED",
-      message:
-        "Your password has been updated, please login using your new credentials",
+      message: "Your password has been updated, please login using your new credentials",
     });
   } catch (error) {
     next(error);
@@ -296,8 +291,8 @@ export const validateUserJwt: RequestHandler = async (req, res, next) => {
       message: "User is verified",
       data: {
         email: user.email,
-        firstname: user.firstname,
-        lastname: user.lastname,
+        firstname: user.firstName,
+        lastname: user.lastName,
         role: user.role,
       },
     });

@@ -1,23 +1,12 @@
 import pool from "../config/db";
 import { ResultSetHeader } from "mysql2";
 import { InsertUser, SelectUserByEmail } from "../types/auth";
-import {
-  TokenType,
-  UserVerificationToken,
-  InsertToken,
-  SelectUser,
-} from "../types/queries";
+import { TokenType, UserVerificationToken, InsertToken, SelectUser } from "../types/queries";
 import { DbError } from "../utils/sqlError";
 
 import { User } from "../types/users";
 
-export const insertUser: InsertUser = async (
-  firstname,
-  lastname,
-  email,
-  password,
-  token
-) => {
+export const insertUser: InsertUser = async (firstname, lastname, email, password, token) => {
   const connection = await pool.getConnection();
 
   try {
@@ -60,8 +49,8 @@ export const selectUserById: SelectUserByEmail = async (id) => {
          id, 
          email, 
          password_hash AS passwordHash, 
-         firstname, 
-         lastname, 
+         firstname AS firstName, 
+         lastname AS lastName, 
          role, 
          email_verified AS emailVerified 
        FROM users 
@@ -84,8 +73,8 @@ export const selectUserByEmail: SelectUserByEmail = async (email) => {
          id, 
          email, 
          password_hash AS passwordHash, 
-         firstname, 
-         lastname, 
+         firstname AS firstName, 
+         lastname AS lastName, 
          role, 
          email_verified AS emailVerified 
        FROM users 
@@ -117,12 +106,7 @@ export const selectVerificationToken = async (tokenReceived: string) => {
     [tokenReceived]
   );
 
-  if (!row.length)
-    throw new DbError(
-      "Failed to find verification token",
-      "INVALID_TOKEN",
-      404
-    );
+  if (!row.length) throw new DbError("Failed to find verification token", "INVALID_TOKEN", 404);
 
   return row[0];
 };
@@ -140,31 +124,20 @@ export const insertToken: InsertToken = async (
 };
 
 export const deleteToken = async (token: string) => {
-  await pool.query<ResultSetHeader>("DELETE FROM tokens WHERE token = ?", [
-    token,
-  ]);
+  await pool.query<ResultSetHeader>("DELETE FROM tokens WHERE token = ?", [token]);
 };
 
-export const deleteTokensByUserAndType = async (
-  user: string,
-  type: TokenType
-) => {
-  await pool.query("DELETE FROM tokens WHERE user_id = ? AND type = ?", [
-    user,
-    type,
-  ]);
+export const deleteTokensByUserAndType = async (user: string, type: TokenType) => {
+  await pool.query("DELETE FROM tokens WHERE user_id = ? AND type = ?", [user, type]);
 };
 
 export const setEmailVerified = async (userId: string, value: number) => {
-  await pool.query<ResultSetHeader>(
-    "UPDATE users SET email_verified = ? WHERE id = ?",
-    [value, userId]
-  );
+  await pool.query<ResultSetHeader>("UPDATE users SET email_verified = ? WHERE id = ?", [
+    value,
+    userId,
+  ]);
 };
 
 export const updateUserPassword = async (id: string, password: string) => {
-  await pool.query("UPDATE users SET password_hash = ? WHERE id = ?", [
-    password,
-    id,
-  ]);
+  await pool.query("UPDATE users SET password_hash = ? WHERE id = ?", [password, id]);
 };
