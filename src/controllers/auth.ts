@@ -5,6 +5,7 @@ import {
   deleteTokensByUserAndType,
   insertToken,
   insertUser,
+  selectToken,
   selectUserByEmail,
   selectUserById,
   selectVerificationToken,
@@ -19,6 +20,7 @@ import { sendResponse } from "../utils/sendResponse";
 import { sendPasswordResetEmail } from "../emails/sendPasswordResetLink";
 import { sendPasswordChangedEmail } from "../emails/sendPasswordChangedEmail";
 import { DbError } from "../utils/sqlError";
+import { Message } from "discord.js";
 
 const ROUNDS = 10;
 
@@ -296,6 +298,30 @@ export const validateUserJwt: RequestHandler = async (req, res, next) => {
         role: user.role,
         emailVerified: user.emailVerified,
       },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const validateToken: RequestHandler = async (req, res, next) => {
+  try {
+    const { token } = req.params;
+    const valid = await selectToken(token);
+
+    if (!valid) {
+      res.status(404).json({
+        status: "INVALID",
+        code: "TOKEN_INVALID",
+        message: "token is invalid",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      status: "SUCCESS",
+      code: "TOKEN_VALID",
+      message: "token is valid",
     });
   } catch (error) {
     next(error);

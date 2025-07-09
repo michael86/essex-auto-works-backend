@@ -17,3 +17,7 @@ export type InsertToken = (
   type: TokenType,
   expires?: Date
 ) => Promise<void>;
+
+export interface SelectToken extends RowDataPacket {
+  token: string;
+}

@@ -1,7 +1,13 @@
 import pool from "../config/db";
 import { ResultSetHeader } from "mysql2";
 import { InsertUser, SelectUserByEmail } from "../types/auth";
-import { TokenType, UserVerificationToken, InsertToken, SelectUser } from "../types/queries";
+import {
+  TokenType,
+  UserVerificationToken,
+  InsertToken,
+  SelectUser,
+  SelectToken,
+} from "../types/queries";
 import { DbError } from "../utils/sqlError";
 
 import { User } from "../types/users";
@@ -125,6 +131,17 @@ export const insertToken: InsertToken = async (
 
 export const deleteToken = async (token: string) => {
   await pool.query<ResultSetHeader>("DELETE FROM tokens WHERE token = ?", [token]);
+};
+
+export const selectToken = async (token: string) => {
+  const sql = `
+    SELECT token
+    FROM tokens
+    WHERE token = ?
+      AND expires_at > NOW()`;
+
+  const [rows] = await pool.query<SelectToken[]>(sql, [token]);
+  return rows.length > 0;
 };
 
 export const deleteTokensByUserAndType = async (user: string, type: TokenType) => {

@@ -1,13 +1,11 @@
-import { body } from "express-validator";
+import { body, param } from "express-validator";
 
 export const emailField = body("email")
   .isEmail()
   .normalizeEmail()
   .withMessage("Invalid email address");
 
-export const passwordField = body("password")
-  .notEmpty()
-  .withMessage("Password is required");
+export const passwordField = body("password").notEmpty().withMessage("Password is required");
 
 export const strongPasswordField = body("password")
   .trim()
@@ -31,3 +29,12 @@ export const lastNameField = body("lastname")
   .not()
   .matches(/\d/)
   .withMessage("Lastname cannot contain a number");
+
+export const token = param("token")
+  .trim()
+  .notEmpty()
+  .withMessage("No token provided")
+  .isHexadecimal()
+  .withMessage("Token must be hexadecimal")
+  .isLength({ min: 64, max: 64 })
+  .withMessage("Invalid token length");

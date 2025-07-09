@@ -5,6 +5,7 @@ import {
   validateRegistration,
   validateResendEmailVerification,
   validateResetPassword,
+  validateResetToken,
 } from "../middlewares/auth";
 import {
   forgotPassword,
@@ -12,6 +13,7 @@ import {
   registerUser,
   resendEmailValidationToken,
   resetPassword,
+  validateToken,
   validateUserJwt,
   verifyEmail,
 } from "../controllers/auth";
@@ -24,6 +26,7 @@ router.post("/login", validateLogin, loginUser);
 router.get("/verify-email/:token", verifyEmail);
 router.post("/resend-verification", validateResendEmailVerification, resendEmailValidationToken);
 router.post("/forgot-password", validateForgotPassword, forgotPassword);
+router.get("/reset-password/validate/:token", validateResetToken, validateToken);
 router.post("/reset-password/:token", validateResetPassword, resetPassword);
 
 export default router;

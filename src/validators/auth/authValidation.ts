@@ -4,6 +4,7 @@ import {
   strongPasswordField,
   firstNameField,
   lastNameField,
+  token,
 } from "../fields";
 
 export const registrationValidation = [
@@ -20,3 +21,5 @@ export const resendEmailValidation = [emailField];
 export const forgotPasswordValidation = [emailField];
 
 export const resetPasswordValidation = [strongPasswordField];
+
+export const validateResetPassToken = [token];
