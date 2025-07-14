@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.1
+-- version 5.2.0
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 26, 2025 at 10:30 AM
--- Server version: 10.4.32-MariaDB
--- PHP Version: 8.2.12
+-- Generation Time: Jul 14, 2025 at 07:26 PM
+-- Server version: 10.4.27-MariaDB
+-- PHP Version: 8.2.0
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -30,9 +30,9 @@ SET time_zone = "+00:00";
 CREATE TABLE `customers` (
   `id` char(36) NOT NULL DEFAULT uuid(),
   `full_name` varchar(100) NOT NULL,
-  `phone` varchar(20) DEFAULT NULL,
+  `phone` varchar(20) NOT NULL,
   `email` varchar(100) DEFAULT NULL,
-  `address` text DEFAULT NULL,
+  `address` text NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `vehicle_reg` varchar(20) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -70,8 +70,8 @@ CREATE TABLE `invoices` (
 --
 
 INSERT INTO `invoices` (`id`, `customer_id`, `user_id`, `invoice_number`, `issue_date`, `due_date`, `subtotal`, `tax`, `total`, `notes`, `created_at`) VALUES
-('0bbf1498-505a-11f0-98a9-00d8612e8c27', '0bbe08c5-505a-11f0-98a9-00d8612e8c27', NULL, 'INV-0001', '2025-06-01', '2025-06-15', 200.00, 40.00, 240.00, 'Full service and oil change', '2025-06-23 17:46:52'),
-('0bbf247b-505a-11f0-98a9-00d8612e8c27', '0bbe1747-505a-11f0-98a9-00d8612e8c27', NULL, 'INV-0002', '2025-06-02', '2025-06-16', 150.00, 30.00, 180.00, 'Brake pad replacement', '2025-06-23 17:46:52');
+('0bbf1498-505a-11f0-98a9-00d8612e8c27', '0bbe08c5-505a-11f0-98a9-00d8612e8c27', NULL, 'INV-0001', '2025-06-01', '2025-06-15', '200.00', '40.00', '240.00', 'Full service and oil change', '2025-06-23 17:46:52'),
+('0bbf247b-505a-11f0-98a9-00d8612e8c27', '0bbe1747-505a-11f0-98a9-00d8612e8c27', NULL, 'INV-0002', '2025-06-02', '2025-06-16', '150.00', '30.00', '180.00', 'Brake pad replacement', '2025-06-23 17:46:52');
 
 -- --------------------------------------------------------
 
@@ -93,10 +93,10 @@ CREATE TABLE `invoice_items` (
 --
 
 INSERT INTO `invoice_items` (`id`, `invoice_id`, `description`, `quantity`, `unit_price`, `total_price`) VALUES
-('0bbfcce3-505a-11f0-98a9-00d8612e8c27', '0bbf1498-505a-11f0-98a9-00d8612e8c27', 'Engine oil change', 1, 50.00, 50.00),
-('0bbfdb2d-505a-11f0-98a9-00d8612e8c27', '0bbf1498-505a-11f0-98a9-00d8612e8c27', 'Labour - 2 hours', 2, 75.00, 150.00),
-('0bbfdb95-505a-11f0-98a9-00d8612e8c27', '0bbf247b-505a-11f0-98a9-00d8612e8c27', 'Brake pads (front)', 1, 80.00, 80.00),
-('0bbfdbd7-505a-11f0-98a9-00d8612e8c27', '0bbf247b-505a-11f0-98a9-00d8612e8c27', 'Labour - 1 hour', 1, 70.00, 70.00);
+('0bbfcce3-505a-11f0-98a9-00d8612e8c27', '0bbf1498-505a-11f0-98a9-00d8612e8c27', 'Engine oil change', 1, '50.00', '50.00'),
+('0bbfdb2d-505a-11f0-98a9-00d8612e8c27', '0bbf1498-505a-11f0-98a9-00d8612e8c27', 'Labour - 2 hours', 2, '75.00', '150.00'),
+('0bbfdb95-505a-11f0-98a9-00d8612e8c27', '0bbf247b-505a-11f0-98a9-00d8612e8c27', 'Brake pads (front)', 1, '80.00', '80.00'),
+('0bbfdbd7-505a-11f0-98a9-00d8612e8c27', '0bbf247b-505a-11f0-98a9-00d8612e8c27', 'Labour - 1 hour', 1, '70.00', '70.00');
 
 -- --------------------------------------------------------
 
@@ -148,7 +148,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `firstname`, `lastname`, `email`, `password_hash`, `role`, `email_verified`, `created_at`) VALUES
-('aea3f946-5266-11f0-9f27-509a4c3e7162', 'michael', 'hodgson', 'michael8t6@gmail.com', '$2b$10$LeOh8fuGS0fOXdxootSxm.OVOM9VosZQMW1f/ggqDkajIyQREoEQW', 'staff', 1, '2025-06-26 08:22:20');
+('5e433499-5e93-11f0-a0d3-00d8612e8c27', 'Michael', 'Hodgson', 'michael8t6@gmail.com', '$2b$10$xXb8ib18XKDI1hH1MbXucOgyM/NSeZYnQ8.IYye9mGT6LfvYk8mpS', 'staff', 1, '2025-07-11 20:12:28');
 
 --
 -- Indexes for dumped tables
